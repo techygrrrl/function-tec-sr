@@ -4,6 +4,8 @@ A Cloudflare Worker serverless function that gets my leaderboard stats from Quar
 
 This is used for chatbots powered by StreamElements.
 
+![](demo.gif)
+
 
 - [Usage](#usage)
   - [Cloudflare Worker setup](#cloudflare-worker-setup)
