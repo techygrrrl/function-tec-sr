@@ -2,23 +2,39 @@ addEventListener("fetch", event => {
   event.respondWith(handleRequest(event.request))
 })
 
+const startPoint = 'Last ingested'
+const endPoint = '</table>'
+
 async function handleRequest(request) {
-  const profileUrl = "https://quarter.zone/users/nintendo/7ae9ea40449147a3/"
-  const response = await fetch(profileUrl)
-  const htmlString = await gatherResponse(response)
+  let output = "techygrrrl's TE:C SR: "
 
-  const startPoint = 'Last ingested'
-  const endPoint = '</table>'
+  const profiles = [
+    {
+      name: 'PC',
+      url: 'https://quarter.zone/users/epic/b490c2090eab455c94ca813cf9cb3512/',
+    },
+    {
+      name: 'Switch',
+      url: 'https://quarter.zone/users/nintendo/7ae9ea40449147a3/'
+    }
+  ]
 
-  let leaderBoard = htmlString.split(startPoint)[1]
-  leaderBoard = leaderBoard.split(endPoint)[0]
+  const resolved = await Promise.all(profiles.map(profile => fetch(profile.url)))
+  const responses = await Promise.all(resolved.map(response => gatherResponse(response)))
 
-  const scores = leaderBoard.match(/(<td>\d*<\/td>)/g).map((s) => s.replace(/\D/g, ''))
-  const [overall, connectedVs, zone, scoreAttack, classic] = scores
+  responses.forEach((htmlString, idx) => {
+    let leaderBoard = htmlString.split(startPoint)[1]
+    leaderBoard = leaderBoard.split(endPoint)[0]
 
-  const message = `techygrrrl's TE:C Skill Ranking (SR): Overall = ${overall}, Zone = ${zone}, Score = ${scoreAttack}, Classic = ${classic}, Connected VS = ${connectedVs}`
+    const scores = leaderBoard.match(/(<td>\d*<\/td>)/g).map((s) => s.replace(/\D/g, ''))
+    const [overall, connectedVs, zone, scoreAttack, classic] = scores
+
+    const profile = profiles[idx]
+
+    output += `${profile.name}: Overall = ${overall}, Zone = ${zone}, Score = ${scoreAttack}, Classic = ${classic}, Connected VS = ${connectedVs}. `
+  })
   
-  return new Response(message)
+  return new Response(output)
 }
 
 /**
